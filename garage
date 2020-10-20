@@ -1,0 +1,82 @@
+<?php
+session_start();
+include "includes/db.php";
+include "includes/functions.php";
+$id = $_SESSION['id'];
+if ( isset( $_SESSION['id'] ) ) {
+} else {
+    // Redirect them to the login page
+    header("Location: login.php");
+}
+
+include "header.php";
+
+ 
+if(isset($_POST['but_sell'])){
+
+  if(isset($_POST['sell'])){
+    foreach($_POST['sell'] as $sellid){
+      $query =  "SELECT value FROM garage WHERE vehicleid = ".$sellid;
+         $result = mysqli_query($connection, $query);
+        $row = mysqli_fetch_assoc($result);
+         $values = $row['value'];
+
+         echo" $values ";
+
+    $query = "UPDATE users SET ";
+     $query .= "cash = cash+$values  ";
+     $query .= "WHERE id = '$id' " ;
+     mysqli_query($connection,$query);
+
+   
+
+      $sellCar = "DELETE from garage WHERE vehicleid=".$sellid;
+      mysqli_query($connection,$sellCar);
+      $cashupdate = "UPDATE users SET";
+      $cashupdate .= "cash = cash+$values,";
+      $cashupdate .= "WHERE id = '$id' " ;
+      mysqli_query($connection,$cashupdate);
+
+
+    }
+  }
+ 
+}
+
+?>
+
+ 
+ <div class="col-9 text-center" style="background-color:pink;">
+<div class="container-fluid">
+	<table class="table">
+              <thead class="">
+    <tr>
+      <form method='post' action=''>
+      <th scope="col">Car</th>
+      <th scope="col">Damage</th>
+      <th scope="col">Value</th>
+      <th scrope="col">Sell</th>
+    </tr>
+  </thead>
+  <?php
+      $query = "SELECT * FROM garage where carowner = '$id'";
+$result = mysqli_query($connection, $query);
+if ($result->num_rows > 0) {
+  // output data of each row
+  while($row = $result->fetch_assoc()) {
+$car = $row['car'];
+$damage = $row['damage'];
+$value = $row['value'];
+$vehicleid = $row['vehicleid'];
+  		  echo "<tr><td>$car</td><td>$damage</td><td>$value</td><td><div class='radio'>
+<label><input type='checkbox' name='sell[]' value='$vehicleid'>Sell</label></td></tr>"; 
+ }
+ echo "</table>";
+
+} else {
+  echo "0 results";
+}
+
+ 
+ ?>
+   <input type='submit' value='sell' name='but_sell'>
