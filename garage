@@ -13,34 +13,26 @@ include "header.php";
 
  
 if(isset($_POST['but_sell'])){
+	if(isset($_POST['sell'])){
+  		if(count($_POST['sell']) > 0){
+			$car_ids = implode(",",$_POST['sell']);
+			$query =  "SELECT SUM(value) as sale_total FROM garage WHERE vehicleid IN (".$car_ids.");
+			$row = mysqli_fetch_assoc($result);
+			$sale_total = $row['sale_total'];
 
-  if(isset($_POST['sell'])){
-    foreach($_POST['sell'] as $sellid){
-      $query =  "SELECT value FROM garage WHERE vehicleid = ".$sellid;
-         $result = mysqli_query($connection, $query);
-        $row = mysqli_fetch_assoc($result);
-         $values = $row['value'];
+			$sellCar = "DELETE from garage WHERE vehicleid IN (".$car_ids.")";
+			mysqli_query($connection,$sellCar);
 
-         echo" $values ";
+			if($sale_total > 0){
+				$query = "UPDATE users SET cash = cash+$sale_total WHERE id = '$id'";
+				mysqli_query($connection,$query);
+			}
 
-    $query = "UPDATE users SET ";
-     $query .= "cash = cash+$values  ";
-     $query .= "WHERE id = '$id' " ;
-     mysqli_query($connection,$query);
-
-   
-
-      $sellCar = "DELETE from garage WHERE vehicleid=".$sellid;
-      mysqli_query($connection,$sellCar);
-      $cashupdate = "UPDATE users SET";
-      $cashupdate .= "cash = cash+$values,";
-      $cashupdate .= "WHERE id = '$id' " ;
-      mysqli_query($connection,$cashupdate);
-
-
-    }
-  }
- 
+			echo "You sold ".count($_POST['sell'])." Cars, you got &pound;".number_format($sale_total,2);
+		} else {
+			echo "You didn't select any cars";
+		}
+	  }
 }
 
 ?>
